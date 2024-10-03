@@ -1,3 +1,9 @@
+structured
+docs
+output
+public
+duplicates.md
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

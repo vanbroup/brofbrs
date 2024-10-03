@@ -1,0 +1,19 @@
+{% include 'includes/header.html' %}
+
+<main>
+    <div class="p-4">
+        <p>Loading all documents in one view might slow down your browser, therefore its recommended to navigate to a specific section of the documents using the index below.</p>
+        
+        <p>If you still want to load all documents, <a href="/documents/all/">click here</a>.</p>
+        
+        <u>
+        {% for section, files_dict in sections.items() %}
+            {% if section|length > 0 %}
+                <li style="margin-left: {{ section|length }}em;"><a href="/documents/{{ section }}/">{{ section }}</a></li>
+            {% endif %}
+        {% endfor %}
+        </u>
+    </div>
+</main>
+
+{% include 'includes/footer.html' %}

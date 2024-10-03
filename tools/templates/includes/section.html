@@ -1,0 +1,58 @@
+<div class="section-container mt-4">
+    {% for type in document_types %}
+        {% set file_paths = files_dict.get(type, []) %}
+        <div
+            class="card card-container text-bg-light border-light type-{{ type }} section-{{ section | replace('.', '-') }}">
+            {% for file in file_paths %}
+            <div class="card-body position-relative{% if not file.name.startswith('0') %} layer-{{ file.name[0] }}00{% elif not loop.first %} border-top{% endif %}">
+                <div class="position-absolute top-0 end-0 m-2">
+                    <a class="ms-2 onhover text-decoration-none text-reset"
+                        onclick="displayMarkDown('{{ type }}','{{ section | replace('.', '-') }}');">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-markdown" viewBox="0 0 16 16">
+                            <path
+                                d="M14 3a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z" />
+                            <path fill-rule="evenodd"
+                                d="M9.146 8.146a.5.5 0 0 1 .708 0L11.5 9.793l1.646-1.647a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 0-.708z" />
+                            <path fill-rule="evenodd"
+                                d="M11.5 5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0v-4a.5.5 0 0 1 .5-.5" />
+                            <path
+                                d="M3.56 11V7.01h.056l1.428 3.239h.774l1.42-3.24h.056V11h1.073V5.001h-1.2l-1.71 3.894h-.039l-1.71-3.894H2.5V11z" />
+                        </svg>
+                    </a>
+                    {% if type != 'BR' %}
+                    <a class="ms-2 onhover text-decoration-none text-reset"
+                        onclick="displayDiff('{{ type }}','{{ section | replace('.', '-') }}');">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-file-diff" viewBox="0 0 16 16">
+                            <path
+                                d="M8 4a.5.5 0 0 1 .5.5V6H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V7H6a.5.5 0 0 1 0-1h1.5V4.5A.5.5 0 0 1 8 4m-2.5 6.5A.5.5 0 0 1 6 10h4a.5.5 0 0 1 0 1H6a.5.5 0 0 1-.5-.5" />
+                            <path
+                                d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2zm10-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1" />
+                        </svg>
+                    </a>
+                    {% endif %}
+                    <a class="ms-2 onhover text-decoration-none text-reset"
+                        href="https://github.com/vanbroup/documents/tree/brofbr/tools/{{ file }}"
+                        title="Edit {{ file }}" target="_blank">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path
+                                d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z" />
+                            <path fill-rule="evenodd"
+                                d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5z" />
+                        </svg>
+                    </a>
+                    <span class="ms-2 ms-2 badge rounded-pill bg-secondary-subtle text-bg-light similarity"></span>
+                    <span class="ms-2 badge rounded-pill bg-secondary">
+                        {{ type }}
+                    </span>
+                </div>
+                <div class="m-3 markDownContent hidden" contenteditable="true">{{ file.read_text(encoding='utf-8') }}</div>
+                <div class="m-3 htmlContent"></div>
+                <div class="m-3 diffContent hidden"></div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</div>

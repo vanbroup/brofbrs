@@ -1,0 +1,229 @@
+<script src="https://cdn.jsdelivr.net/npm/diff-match-patch@1.0.5/index.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.9.1/showdown.min.js"></script>
+
+<script>
+    function toggleVisibility(type) {
+        // Select and toggle visibility for the specified type
+        const elements = document.querySelectorAll('.type-' + type);
+        elements.forEach(element => {
+            element.classList.toggle('hidden');
+        });
+    }
+
+    function displayMarkDown(type, section) {
+        var typeElement = document.querySelector('.type-' + type + '.section-' + section);
+        typeElement.querySelector('.markDownContent').classList.toggle('hidden');
+        typeElement.querySelector('.htmlContent').classList.toggle('hidden');
+    }
+
+    var dmp = new diff_match_patch();
+    function updateDiff(type, section) {
+        var typeElement = document.querySelector('.type-' + type + '.section-' + section);
+        var diffElement = typeElement.querySelector('.diffContent');
+        var htmlElement = typeElement.querySelector('.htmlContent');
+        var similarityElement = typeElement.querySelector('.similarity');
+
+        var brElement = document.querySelector('.type-BR.section-' + section)
+        if (brElement === null) {
+            return;
+        }
+
+        var brMarkDownElement = brElement.querySelector('.markDownContent');
+        var markDownElement = typeElement.querySelector('.markDownContent');
+
+        var brContent = brMarkDownElement.innerText;
+        var markDownContent = markDownElement.innerText;
+
+        dmp.Diff_Timeout = 5;
+        dmp.Diff_EditCost = 4;
+
+        var d = dmp.diff_main(brContent, markDownContent);
+        dmp.diff_cleanupEfficiency(d);
+
+        var ds = dmp.diff_prettyHtml(d);
+        diffElement.innerHTML = ds;
+
+        updateSimilarity(type, section);
+    }
+
+    
+    function updateSimilarities() {
+        // Get all the types and sections from the DOM to set similarity
+        var typeSections = Array.from(document.querySelectorAll('[class^="type-"], [class*=" type-"]')).map(el => {
+            var typeMatch = el.className.match(/type-([^\s]+)/);
+            var sectionMatch = el.className.match(/section-([^\s]+)/);
+            return {
+                type: typeMatch ? typeMatch[1] : null,
+                section: sectionMatch ? sectionMatch[1] : null
+            };
+        });
+
+        // For each type-section combination, update the similarity
+        typeSections.forEach(function (typeSection) {
+            if (typeSection.type && typeSection.type !== 'BR' && typeSection.section) {
+                updateSimilarity(typeSection.type, typeSection.section);
+            }
+        });
+    }
+
+    function updateSimilarity(type, section) {
+        var typeElement = document.querySelector('.type-' + type + '.section-' + section);
+        var diffElement = typeElement.querySelector('.diffContent');
+        var htmlElement = typeElement.querySelector('.htmlContent');
+        var similarityElement = typeElement.querySelector('.similarity');
+
+        var brElement = document.querySelector('.type-BR.section-' + section)
+        if (brElement === null) {
+            return;
+        }
+
+        var brMarkDownElement = brElement.querySelector('.markDownContent');
+        var markDownElement = typeElement.querySelector('.markDownContent');
+
+        var brContent = brMarkDownElement.innerText;
+        var markDownContent = markDownElement.innerText;
+
+        // Normalize the texts (convert to lower case, remove spaces and newlines)
+        var normalizedBrContent = brContent.toLowerCase().replace(/\s+/g, '');
+        var normalizedMarkDownContent = markDownContent.toLowerCase().replace(/\s+/g, '');
+
+        // Calculate the Levenshtein distance
+        var distance = levenshtein(normalizedBrContent, normalizedMarkDownContent);
+
+        // Calculate the percentage similarity
+        var maxLength = Math.max(brContent.length, markDownContent.length);
+        var percentageSimilarity = ((maxLength - distance) / maxLength) * 100;
+
+        // Show the percentage similarity
+        similarityElement.innerText = percentageSimilarity.toFixed(0) + '%';
+    }
+
+    function levenshtein(a, b) {
+        var temp, i, j, prev, val, row, matrix = [];
+        var a = a.split(''), b = b.split('');
+
+        for (i = 0; i <= b.length; i++) {
+            matrix[i] = [i];
+            if (i === 0) continue;
+            for (j = 0; j <= a.length; j++) {
+                matrix[0][j] = j;
+                if (j === 0) continue;
+                prev = matrix[i - 1][j - 1];
+                val = b[i - 1] === a[j - 1] ? prev : prev + 1;
+                row = matrix[i];
+                row[j] = Math.min(val, row[j - 1] + 1, matrix[i - 1][j] + 1);
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    function displayDiff(type, section) {
+        var typeElement = document.querySelector('.type-' + type + '.section-' + section);
+        var diffElement = typeElement.querySelector('.diffContent');
+        var htmlElement = typeElement.querySelector('.htmlContent');
+
+        var brElement = document.querySelector('.type-BR.section-' + section);
+
+        // Only toggle display if diff was already created
+        if (diffElement.innerHTML === '') {
+            updateDiff(type, section);
+        }
+
+        htmlElement.classList.toggle('hidden');
+        diffElement.classList.toggle('hidden');
+
+        // Get all diffContents in the same section
+        var diffContents = document.querySelectorAll(' .section-' + section + ' .diffContent');
+
+        // Check if there is any visible diffContent
+        var isAnyDiffContentVisible = Array.from(diffContents).some(function (diffContent) {
+            return !diffContent.classList.contains('hidden');
+        });
+
+        // Show the brElement only if there is any visible diffContent
+        if (isAnyDiffContentVisible) {
+            brElement.querySelector('.markDownContent').classList.remove('hidden');
+            brElement.querySelector('.htmlContent').classList.add('hidden');
+        } else {
+            brElement.querySelector('.markDownContent').classList.add('hidden');
+            brElement.querySelector('.htmlContent').classList.remove('hidden');
+        }
+    }
+
+    function fixMarkdown(content) {
+        return content.replaceAll("|-", "|--");
+    }
+
+    // Add event listeners for toggle switches after the content is loaded
+    document.addEventListener('DOMContentLoaded', function () {
+        const markDownElements = document.querySelectorAll('.markDownContent');
+        markDownElements.forEach(element => {
+            // Create a new showdown converter
+            var converter = new showdown.Converter({ metadata: true, smartIndentationFix: true, openLinksInNewWindow: true});
+            converter.setFlavor('github');
+
+            // Convert the markdown to HTML using Showdown
+            var htmlContent = converter.makeHtml(fixMarkdown(element.textContent));
+
+            // Replace the markdown content in the div with the converted HTML
+            element.parentNode.querySelector('.htmlContent').innerHTML = htmlContent;
+
+            // Add an input event listener to the markdown div
+            element.addEventListener('input', function () {
+                // Convert the updated markdown to HTML
+                var updatedHtmlContent = converter.makeHtml(fixMarkdown(this.textContent));
+                console.log(fixMarkdown(this.textContent));
+
+                // Update the HTML preview
+                this.parentNode.querySelector('.htmlContent').innerHTML = updatedHtmlContent;
+
+                // Extract the section and type from the class list of the parent element
+                var classes = this.parentNode.parentNode.className.split(/\s+/);
+                var type = classes.find(c => c.startsWith('type-')).substring(5);
+                var section = classes.find(c => c.startsWith('section-')).substring(8);
+
+                // Trigger updateDiff and updateSimilarity
+                updateDiff(type, section);
+            });
+        });
+
+
+        {% for type in document_types %}
+        document.getElementById('toggle{{ type }}').addEventListener('change', function () {
+            toggleVisibility('{{ type }}');
+        });
+        {% endfor %}
+
+
+        var toc = "";
+        var level = 0;
+        var anchors = [];
+
+        document.querySelector("main").querySelectorAll("h1, h2, h3, h4, h5, h6").forEach(function (header) {
+            var anchorName = header.getAttribute("id");
+            
+            let headerLink = document.createElement('a');
+            headerLink.href = "#" + anchorName;
+            
+            // Store the current header text and clear it
+            let headerText = header.textContent;
+            header.textContent = '';
+
+            // Set the text of the anchor to the header text
+            headerLink.textContent = headerText;
+
+            // Append the anchor to the header
+            header.append(headerLink);
+            
+            if (!anchors.includes(anchorName)) {
+                anchors.push(anchorName);
+                var headerLevel = parseInt(header.tagName[1]);
+                toc += "<div style=\"margin-left: " + (headerLevel - 1) * 10 + "px; margin-top: " + (headerLevel < level ? 20 : 0) + "px; font-weight: " + (headerLevel === 1 ? 'bold' : 'normal') + "\"><a href=\"#" + anchorName + "\">" + header.textContent + "</a></div>";
+            }
+            level = parseInt(header.tagName[1]);
+        });
+
+        document.getElementById("tocContent").innerHTML += toc;
+        //updateSimilarities();
+    });
+</script>
