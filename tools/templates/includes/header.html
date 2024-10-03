@@ -126,10 +126,10 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar me-auto">
-                <a class="nav-link ms-4" href="/documents/">Home</a>
-                <a class="nav-link ms-4" href="/documents/similarity/">Similarity</a>
+                <a class="nav-link ms-4" href="/brofbrs/">Home</a>
+                <a class="nav-link ms-4" href="/brofbrs/similarity/">Similarity</a>
                 {% for type in document_types %}
-                    <a class="nav-link ms-4 d-none d-lg-inline" href="/documents/diff-{{ type | lower }}.html">Diff {{ type }}</a>
+                    <a class="nav-link ms-4 d-none d-lg-inline" href="/brofbrs/diff-{{ type | lower }}.html">Diff {{ type }}</a>
                 {% endfor %}
             </div>
             <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="toc"
@@ -141,10 +141,10 @@
                 <div class="offcanvas-body">
                     <hr />
                     <div class="m-0 p-0">
-                        <a class="nav-link ms-4" href="/documents/">Home</a>
-                        <a class="nav-link ms-4" href="/documents/similarity/">Show similarity</a>
+                        <a class="nav-link ms-4" href="/brofbrs/">Home</a>
+                        <a class="nav-link ms-4" href="/brofbrs/similarity/">Show similarity</a>
                         {% for type in document_types %}
-                            <a class="nav-link ms-4" href="/documents/diff-{{ type | lower }}.html">Differences {{ type }} (in/out)</a>
+                            <a class="nav-link ms-4" href="/brofbrs/diff-{{ type | lower }}.html">Differences {{ type }} (in/out)</a>
                         {% endfor %}
                     </div>
 
