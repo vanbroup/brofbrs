@@ -1,4 +1,4 @@
-Jinja2==3.1.5
+Jinja2==3.1.6
 Markdown==3.4.4
 openai==1.42.0
 python_frontmatter==1.0.0
